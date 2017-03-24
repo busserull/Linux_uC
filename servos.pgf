@@ -1,0 +1,49 @@
+\begin{tikzpicture}
+%% Colors
+\colorlet{secCol}{blue!15};
+%% Servo arm
+\tikzset{pics/arm/.style args={#1}{
+code = {
+\begin{scope}[scale=0.5,xshift=-1cm,yshift=1.5cm,rotate around={#1:(2.5,1)}]
+\path[draw, fill=white] (2.5,1) circle (0.6);
+\path[draw, fill = secCol] (0.5,0.5) arc (270:90:0.5) -- ++(2,0)  arc (90:-90:0.5) -- cycle;
+\path[draw, fill=white] (0.5,1) ++ (-0.1,0) -- ++ (0.2,0.2) -- ++(0,-0.4) -- cycle;
+\end{scope}
+}
+}
+}
+%% Motor box
+\tikzset{box/.pic = {
+\path[draw,thin,rounded corners,fill=gray!20] (0,0) rectangle ++ (1.5,2);
+\begin{scope}
+\path[clip] (0,0) rectangle ++(1.5,2);
+\path[draw,thick,postaction={fill=white}] (0.35,0.1) rectangle ++(0.1,-0.2) ++(-0.05,0.25) circle (0.1);
+\path[draw,thick,postaction={fill=white}] (1.05,0.1) rectangle ++(0.1,-0.2) ++(-0.05,0.25) circle (0.1);
+\end{scope}
+\path[fill=white] (1.05,0.1) rectangle ++(0.1,-0.2);
+\path[fill=white] (0.35,0.1) rectangle ++(0.1,-0.2);
+}
+}
+
+\foreach \x/\rot/\duty/\val in {0/0/0.1/1.0,
+2.5/-45/0.325/1.25,
+5/-90/0.55/1.50,
+7.5/-135/0.775/1.75,
+10/-180/1/2.0}{
+% Servo motors
+\path (\x,0) pic {box};
+\path (\x,0) pic {arm=\rot};
+
+% Duty cycles
+\path[draw,thick] (\x,-1.5) -- ++(0,0.6) -- ++(\duty,0) -- ++ (0,-0.6) -- (\x + 1.5,-1.5)
+arc (0:30:0.2) arc (30:-30:0.2);
+\node at (\x + 0.75,-0.5) {$\val\,\mathrm{ms}$};
+
+% Switch periodes
+\path[draw,thick,<->] (\x,-2) -- ++(1.5,0);
+\path[draw,semithick] (\x,-2.2) -- ++(0,0.4) ++ (1.5,0) -- ++(0,-0.4);
+\node at (\x + 0.75,-2.3) {$20\,\mathrm{ms}$};
+}
+
+
+\end{tikzpicture}
