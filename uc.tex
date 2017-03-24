@@ -98,6 +98,7 @@ Når dette er gjort lager dere en ny mappe der dere laster ned \textit{Makefilen
 \caption{P1000-kort med Atmel AT90USB1287-prosessor.}
 \label{p1000::card}
 \end{figure}
+
 \section{Oppgave 1}
 Koble opp kortet som beskrevet i seksjon \ref{Setup::Hardware}. Deretter kobler dere den medfølgende flatkabelen mellom \textit{PORTB} og \textit{LEDS/SW}, som indikert i figur \ref{PORTB::LEDS}. Det er viktig at den røde ledningen på flatkabelen vender i samme retning på de to tilkoblingspunktene (for eksempel til høyre hos både \textit{PORTB} og \textit{LEDS/SW}).
 \begin{figure}[htb]
@@ -106,27 +107,30 @@ Koble opp kortet som beskrevet i seksjon \ref{Setup::Hardware}. Deretter kobler 
 \caption{Koblingspunkt av flatkabel.}
 \label{PORTB::LEDS}
 \end{figure}
-Deretter skal dere teste P1000-kortet ved å laste opp filen \textit{example.hex} som finnes på it's learning. Dette gjøres simpelthen ved å kalle \textbf{make test} fra mappen med \textit{example.hex}.\\
+Deretter skal dere teste P1000-kortet ved å laste opp filen \textit{example.hex} som finnes på it's learning. Dette gjøres simpelthen ved å kalle \textbf{make test} fra mappen med \textit{example.hex}. Om dere får en feilmeldig, prøver dere \textbf{sudo make test}.\\
+\\
 Når dette er gjort skal de fire LEDene (LED0-3) til høyre på kortet blinke etter hverandre. Hvis dette ikke skjer, så huk tak i en studass.
 \subsection{Knapper og LEDer}
-Dere skal bruke de fire knappene til høyre på kortet til å sette av og på tilhørende lys. Lag en fil kalt \textit{main.c}. I toppen av denne inkluderer dere biblioteket \textit{avr/io} ved å skrive \textbf{\#include} $<$\textbf{avr/io.h}$>$.\\
+Dere skal bruke de fire knappene til høyre på kortet til å sette av og på tilhørende lys. Lag en fil kalt \textit{main.c}. Lag også filene \textit{switch.c}, \textit{switch.h}, \textit{led.c} og \textit{led.h}. Alle \textit{c}-filene skal inkludere biblioteket $<$avr/io.h$>$.\\
 \\
-Videre skal main-filen inneholde følgende funksjoner:
+Følgende funksjoner skal implementeres:
 \begin{itemize}
 \item void init\_led()
-\item void init\_switch()
 \item void set\_led(int n, int v)
+\item void init\_switch()
 \item int read\_switch(int n)
 \end{itemize}
-Her skal $n$ være et tall mellom 0 og 3, som bestemmer hvilken knapp/led vi snakker om. I set\_led skal $v$ være enten 0 eller 1, som bestemmer om det skal lyse eller ikke.\\
+De to første skal i \textit{led.c}, og de to siste skal i \textit{switch.c}. Videre skal $n$ være et tall mellom 0 og 3, som bestemmer hvilken knapp/led vi snakker om. I set\_led skal $v$ være enten 0 eller 1, som bestemmer om det skal lyse eller ikke.\\
+\\
 De to init-funksjonene skal sette nødvendige IO-registre før set\_led og read\_switch kalles. Alt dere trenger står i databladet under kapittel 11. Spesielt kapittel 11.1 og 11.2.1.
 \subsubsection{Hint}
 \begin{enumerate}
 \item Både knappene og LEDene er koblet til PORTB på mikrokontrolleren. Knappene er koblet til pinne 1, 3, 5, 7. LEDene er koblet til pinne 0, 2, 4, 6.
 \item LEDene er koblet i såkalt \textit{sinking mode}. Det vil si at de lyser når 0 er skrevet til pinnene i PORTB. \textit{Sourcing mode} er det motsatte.
-\item Ta en titt på appendiks \ref{Bitwise::in::C} for å se hvordan vi gjør bitvis operasjoner som å sette enkelte bit i C. Særlig i kodesnutt \ref{code::names} er det tips å hente.
+\item Ta en titt på appendiks \ref{Bitwise::in::C} for å se hvordan vi gjør bitvis operasjoner som å sette enkelte bit i C. Særlig i kodesnutt \ref{code::names} er det inspirasjon å hente.
 \end{enumerate}
 \subsection{USART - Serieport}
+\label{TASK::USART}
 UART og USART, som står for \textbf{U}niversal (\textbf{S}ynchronous) \textbf{A}synchronous \textbf{R}eceiver \textbf{T}ransmitter, er to forkortelser som brukes litt om hverandre. Dette gjøres mest sannsynlig for å forvirre de uinnvidde.\\
 Uansett årsak skal vi bruke UART til å kommunisere med datamaskinen. Koble pinne 1 på UART BRIDGE til pinne 4 på PORTD, og pinne 2 på UART BRIDGE til pinne 3 på PORTD. Se figur \ref{UART::PORTD}.
 \begin{figure}[hb]
@@ -140,7 +144,7 @@ Etter dette oppretter dere filene \textit{usart.c} og \textit{usart.h}. To funks
 \item int init\_usart(int baudrate);
 \item int usart\_putchar(char c);
 \end{itemize}
-Baudrate betyr hvor mange bit vi sender hvert sekund. Init-funksjonen skal bare sette opp nødvendige register. Funksjonen usart\_putchar skal først sjekke om det er klart for å sende, for så å dytte bokstaven $c$ over seriekabelen.\\
+Baudrate betyr hvor mange bit vi sender hvert sekund. Init-funksjonen skal bare sette opp nødvendige register. Funksjonen \textit{usart\_putchar} skal først sjekke om det er klart for å sende, for så å dytte bokstaven $c$ over seriekabelen.\\
 \\
 Bruk følgende oppsett:
 \begin{itemize}
@@ -151,13 +155,78 @@ Bruk følgende oppsett:
 \end{itemize}
 Alt dere trenger står i kapittel 19 i databladet, men hvis dere vil ha noe som kanskje er mer lettfattelig, så ta en titt på \href{http://extremeelectronics.co.in/avr-tutorials/using-the-usart-of-avr-microcontrollers/}{extremeelectronics.co.in}.\\
 \\
-Når dere er klare for å teste kobler dere P1000-kortet til datamaskinens øverste DSUB9-port. Etterpå kaller dere \textbf{dmesg} fra terminalen. En av de nederste linjene burde fortelle hvor P1000-kortet ligger registrert - for eksempel under \textit{/dev/ttyS0}. Når dere har funnet ut hvor kortet ligger, kaller dere \textbf{sudo stty -F /dev/ttyS0 19200} (dersom det ble lagt til som ttyS0), etterfulgt av \textbf{cat /dev/ttyS0}. Hvis dere får bokstaver fra P1000-kortet har dere greid oppgaven.
+Når dere er klare for å teste kobler dere P1000-kortet til datamaskinens øverste DSUB9-port. Etterpå kan dere kalle \textbf{sudo stty -F /dev/ttyS0 19200}, etterfulgt av \textbf{cat /dev/ttyS0}. Kommandoen \textbf{cat} vil bare ta hva enn som kommer inn gjennom DSUB9-porten og skrive det til skjerm.\\
+\\
+Om dere derimot ønsker å kunne sende ting fra datamaskinen til mikrokontrolleren kan dere kalle \textbf{minicom -b 19200 -D /dev/ttyS0}. For å gå ut fra \textbf{minicom} trykker dere \textit{Ctrl+A}, etterfulgt av \textit{Q}.\\
+\\
+Om dere får de bokstavene dere sender fra mikrokontrolleren inn på datamaskinen, har dere klart oppgaven.
 \subsubsection{Hint}
 \begin{enumerate}
 \item Mikrokontrolleren kjører på 16 MHz, legg til \textbf{\#define F\_CPU 16000000UL} i toppen av \textit{uart.c}.
 \item Det er lurt å sende '\textbackslash r' etterfulgt av '\textbackslash n' for å avslutte linjer sendt fra mikrokontrolleren.
+\item Innholdet i registeret UBRR1 skal være $51$. Hvorfor, og vil baudraten da bli nøyaktig 19200 bits/s?
+\item Feil kan oppstå både i software \textit{og} hardware. Har dere koblet riktig pinne fra UART-BRIDGE til riktig pinne på PORTD?
 \end{enumerate}
+\subsubsection{Frivillig oppgave}
+Det går helt fin an å bruke \textit{usart\_putchar} til å sende over én og én bokstav, men det hadde vært praktisk å kunne bruke funksjonen \textit{printf} direkte. Vi kan få til dette ved å omdirigere strømmen \textit{stdout} til \textit{usart\_putchar}. Dette gjøres slik:
+\begin{enumerate}
+\item Legg til \textbf{static FILE usart\_stdout = FDEV\_SETUP\_STREAM( usart\_putchar, NULL, \_FDEV\_SETUP\_WRITE);} i \textit{usart.c}.
+\item Legg til \textbf{stdout = \&usart\_stdout;} i slutten av \textit{init\_usart}.
+\item Inkludér biblioteket $<$\textit{stdio.h}$>$ i main.
+\end{enumerate}
+Når dette er gjort kan dere bruke printf som dere normalt ville gjort i C-kode til vanlig. Prøv med \textit{printf("Your lucky number: \%d\textbackslash r\textbackslash n", 21)}.
 
+\section{Oppgave 2}
+Koble opp mikrokontrollerkortet med seriekabel. Kjør et program som sender bokstaver til datamaskinen og se at det fungerer, på samme måte som i avsnitt \ref{TASK::USART}. Koble deretter pinne 1 fra JOY-CONN til pinne 2 på PORTF, og pinne 2 fra JOY-CONN til pinne 1 på PORTF. Se figur \ref{JOY::PORTF}. Dette vil koble den analoge spakens X- og Y-akse til henholdsvis kanal 0 og 1 på den analoge-til-digitale omformeren i mikrokontrolleren.
+\begin{figure}
+\centering
+\includegraphics[width=0.8\linewidth]{joystick_portf.png}
+\caption{Kobling mellom analog spake og PORTF.}
+\label{JOY::PORTF}
+\end{figure}
+\subsection{Analog/Digital-omformer}
+Opprett filene \textit{adc.c} og \textit{adc.h}. Følgende to funksjoner skal implementers:
+\begin{itemize}
+\item void init\_adc()
+\item int adc\_read(char axis)
+\end{itemize}
+Som før skal init-funksjonen sette opp nødvendige registre. Funksjonen \textit{adc\_read} skal ta inn \textit{axis} som bestemmer om vi skal lese av X-aksen eller Y-aksen til den analoge spaken; denne verdien skal returneres.\\
+\\
+I main skal dere legge til kode som periodisk leser X-posisjonen og Y-posisjonen til den analoge spaken og skriver dette ut til skjermen over USART. Sett gjerne origo til spakens nøytrale posisjon, slik at dere kan bruke $-100$ for helt til venstre/helt nede, og $+100$ for helt til høyre/helt oppe.\\
+\\
+All nødvendig informasjon står i kapittel 26 i databladet.
+\subsubsection{Hint}
+\begin{enumerate}
+\item Sett referansespenningen til ADCen til AREF.
+\item Bruk \textit{single conversion mode}, istedenfor \textit{freerunning mode}.
+\item ADCen gir bare pålitelig 10-bits presisjon dersom den kjøres under 50 kHz - 200 kHz. Mikrokontrollerens klokke er 16 MHz. Bruk \textit{prescalers} for å ordne dette.
+\item Les ADCL før dere leser ADCH når dere innhenter konvertert verdi.
+\item Sett riktig bit i ADMUX hver gang dere starter en analog-til-digital omforming. Altså gjør dette i \textit{adc\_read}.
+\item ADSC forblir høy helt fra en omforming startes, til den er ferdig. Dette kan brukes for å vente på resultat.
+\end{enumerate}
+\subsubsection{Frivillig oppgave}
+Om man kontrollerer en treng enhet fra en mikrokontroller er det dumt å vente på svar via \textit{polling}. Derfor har man muligheten til å benytte \textit{interrupts}, altså at den trege enheten forteller mikrokontrolleren når den er ferdig med operasjonen den utfører.\\
+\\
+En ADC-konvertering tar på denne plattformen 13 ADC-klokkesykler, så \textit{interrupts} er helt overkill i dette tilfellet. Om man bruker avbruddsrutiner feil, kan faktisk mikrokontrolleren bli tregere enn om man simpelthen hadde \textit{pollet}, på grunn av unødvendig mange \textit{push}/\textit{pop}-operasjoner på tilstandsstakken.\\
+\\
+Uansett skal vi her svitsje fra \textit{polling} til \textit{interrupts}, bare for læringsutbyttets sin skyld. Gjør det følgende i \textit{adc.c}:
+\begin{enumerate}
+\item Inkludér biblioteket $<$\textit{avr/interrupt.h}$>$
+\item Opprett tre global \textit{int}er, kalt \textit{global\_x}, \textit{global\_y} og \textit{x\_or\_y}.
+\item Implementer funksjonen \textit{ADC\_vect()}. NB: Denne spesielle funksjonen har ingen returtype, ikke engang \textit{void}!
+\item Gjør om \textit{int adc\_read} til \textit{void adc\_read}.
+\item Legg til funksjonskallet \textit{sei()} i \textit{init\_adc()}. Denne funksjonen tillater \textit{globale interrupts} og er ferdig definert i \textit{avr/interrupt}.
+\end{enumerate}
+Dere vil nå kalle \textit{adc\_read} hver gang dere vil starte en omsetting, men dere vil ikke vente på at den blir ferdig. Hver gang dere kaller \textit{adc\_read} setter dere den globale variabelen \textit{x\_or\_y} slik at avbruddsfunksjonen vet hva den skal oppdatere når ADCen er ferdig.\\
+\\
+I avbruddsrutinen (\textit{ADC\_vect}) skal dere først kalle \textit{cli()}, denne funksjonen er motsatt av \textit{sei()} og sørger for at dere ikke får en ny interrupt mens dere behandler denne. Last deretter verdien som ligger ferdig i ADCL og ADCH inn i enten \textit{global\_x} eller \textit{global\_y}, avhengig av verdien til \textit{x\_or\_y}. På slutten av avbruddsrutinen må dere huske på å skru på globale avbrudd med \textit{sei()}, slik at \textit{adc\_read} fortsatt vil fungere etterpå.\\
+\\
+Når dere er ferdige med alt dette kan dere simpelthen sende \textit{global\_x} og \textit{global\_y} over seriekabelen. Som sagt så er avbruddsrutiner rett og slett tull og tøys i dette tilfellet, men dersom man for eksempel styrer \textit{flere, trege eksterne ADCer} fra én og samme mikrokontroller - da kan \textit{interrupts} være en god idé.
+
+\section{Oppgave 3}
+
+\newpage
+\noindent
 \appendix
 \section{Bitoperasjoner i C}
 \label{Bitwise::in::C}
