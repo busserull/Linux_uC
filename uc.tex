@@ -286,6 +286,64 @@ arc (0:30:0.2) arc (30:-30:0.2);
 \caption{Pulsbreddesignal inn på servomotor med tilhørende vinkel.}
 \label{Servo::PWM}
 \end{figure}
+\subsection{Pulsbreddemodulasjon}
+Først oppretter dere filene \textit{pwm.c} og \textit{pwm.h}. Følgende funksjoner skal implementeres:
+\begin{itemize}
+\item void init\_pwm()
+\item void pwm\_set\_duty(double ms)
+\end{itemize}
+Som før skal init-funksjonen sette alle nødvendige registre. Funksjonen \textit{pwm\_set\_duty} skal ta inn en \textit{double} i området $1.0$ til $2.0\,\mathrm{ms}$, slik at dere har en feilmargin på $0.1\,\mathrm{ms}$ i begge ender, før servoen ryker.\\
+\\
+Dere skal bruke \textbf{Timer1} på mikrokontrolleren. Utgangen på denne er koblet til \textbf{OC1A}; ta en titt i databladet for å finne ut hvilken IO-pinne dette svarer til. Denne pinnen må settes i \textit{output}-modus.\\
+\\
+Tanken er at vi skal kunne bruke PWM-modulen som illustrert i figur \ref{PWM::14}. Vi skal kunne sette en verdi i registeret \textbf{ICR1}, som den interne telleren skal telle opp til. Når telleren når denne verdien skal den starte på nytt, samtidig som den setter et høyt utgangssignal. Vi skal kunne bestemme pulsbredden ved å skrive en verdi til registeret \textbf{OCR1A}. Når telleren når denne verdien, skal utgangssignalet gå lavt.\\
+\\
+Ta en titt på kapittel 15 i databladet for å finne ut hva du må sette. Spesielt er tabell 15.2 og 15.4 til stor hjelp.
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[xscale=0.9]
+% Internal counter
+\path[draw,thick] (0,2) --++(3,3) --++(0,-3) --++(3,3) --++(0,-3) --++(3,3) --++(0,-3) --++(3,3) --++(0,-3);
+% ICR1
+\path[draw,dashed] (0,5)  node[left] {ICR1} --(12,5);
+% OCR1A
+\path[draw,thick,dashed] (0,3) node[left] {OCR1A} -- (6,3)++ (0,1) -- (9,4) ++ (0,-1.5) -- (12,2.5);
+% OC1A
+\path[draw=blue!50,thick] (0,0) node[above left] {OC1A} --++ (0,1)--++(1,0)--++(0,-1)--++(2,0)--++(0,1)--++(1,0)
+--++(0,-1)--++(2,0)--++(0,1)--++(2,0)--++(0,-1)--++(1,0)--++(0,1)--++(0.5,0)--++(0,-1)--++(2.5,0);
+% Resets
+\begin{scope}[draw=gray,dotted]
+\foreach \x in {0,3,...,9}{
+\draw (\x,2) --++(0,-1);
+}
+\draw (1,3) -- (1,1);
+\draw (4,3) -- (4,1);
+\draw (8,4) -- (8,1);
+\draw (9.5,2.5) -- (9.5,1);
+\end{scope}
+\end{tikzpicture}
+\caption{Ønsket pulsbreddemodulasjonsvirkemåte.}
+\label{PWM::14}
+\end{figure}
+For å få riktig svitsjeperiode må dere bruke \textit{prescalers}, hvis ikke ville en periode blitt $4.1\,\mathrm{ms}$. Ta en titt i tabell 15.5 for å finne en egnet \textit{prescaler}.\\
+\\
+Når dere har satt opp alt kobler dere et oscilloskop på utgangspinnen til \textbf{OC1A} og måler perioden. Dytt også den analoge spaken ut i kantene og forsikre dere om at det er umulig å få en \textit{duty cycle} utenfor det sikre området.
+\subsubsection{Hint}
+\begin{enumerate}
+\item Den riktige PWM-modusen er en av \textit{Fast PWM}-modiene.
+\item Om dere får feil \textit{duty cycle} på utgangen, så er to vanlige feilkilder \textit{heltallsdivisjon} og \textit{overflyt} i \textit{pwm\_set\_duty}.
+\item To forskjellige \textit{prescalers} fungerer godt i dette tilfellet her; dere bør velge den minste. Hvorfor?
+\end{enumerate}
+\subsection{Servomotorkontroll}
+Dette er øyeblikket alle har ventet på! Timene med intens databladlesing vil nå være verd innsatsen. Det vil være noen grønne motorbokser tilgjengelig på Sanntidssalen. Servomotoren i denne boksen har følgende tre ledninger: \textbf{gul} (PWM), \textbf{rød} ($V_{CC}$), og \textbf{svart} (jord). Koble disse til P1000-kortet.\\
+\\
+Dere vil nå kunne styre servomotoren ved hjelp av den analoge spaken.
+\subsubsection{Hint}
+\begin{enumerate}
+\item Samme signalisering kan brukes til å kontrollere en \textit{micro servo}, for eksempel den sett i figur \textcolor{red}{Insert this}. Koble denne til en mikrokontroller med bluetooth, og dere har en trådløs lysbryter.
+\item Dere vil se mer enn nok av mikrokontrollerkortet igjen i TTK4155, "byggern".
+\item Omega Verksted har stort sett de komponentene dere skulle trenge, og kunnskapen til å hjelpe dere, om dere ønsker å utforske innvevde datasystemer på egenhånd. Dette er en veldig god måte å lære på :)
+\end{enumerate}
 
 \newpage
 \noindent
