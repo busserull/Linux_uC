@@ -13,6 +13,12 @@
 \renewcommand{\lstlistingname}{Kodesnutt}
 \lstset{language=C, frame=single}
 
+% When I wrote this, it's learning was used, now
+% we are switching to blackboard. Somehow, blackboard
+% manages to be even worse than it's learning, so in
+% case of future changes, here is a define:
+\def\e_learn_platform{blackboard}
+
 \begin{document}
 \maketitle
 \section{Bakgrunn}
@@ -22,7 +28,7 @@ Denne laben er delt i tre deler, som hver skal gi en introduksjon til innvevde d
 \subsection{Datablad}
 For å få en mikrokontroller til å gjøre noe interessant setter man verdier i interne registre (via \textit{software}), som igjen dikterer hvordan \textit{hardware} vil oppføre seg. For å finne hvilke registre man skal sette, tar man en titt i mikrokontrollerens datablad; der står som regel alt man trenger å vite. Haken er selvsagt at datablad er svære beist som lett kan vokse seg over tusen sider, og vel så det. Derfor er det viktig å kunne finne frem til det man trenger av informasjon, slik at man unngår et nervøst sammenbrudd på lab. Heldigvis har datablader gode innholdsfortegnelser, og i Atmels tilfelle også en nyttig \textbf{registeroversikt} på slutten av hvert kapittel. Bruk denne oversikten flittig!\\
 \\
-Datablad for mikrokontrolleren brukt i denne laben (AT90USB1287) ligger på it's learning, men kan også finnes på Atmel sine sider.
+Datablad for mikrokontrolleren brukt i denne laben (AT90USB1287) ligger på \e_learn_platform, men kan også finnes på Atmel sine sider.
 
 \subsection{Linux vs. Windows}
 Dere kan selv velge om dere vil bruke Windows eller Linux i denne laben. Stort sett kan forskjellene oppsummeres som i figur \ref{Win::vs:Linux}: På Windows håndterer Atmel Studio alt, mens i Linux er det fritt frem.
@@ -96,7 +102,7 @@ Dere som har valgt Linux velger fritt hvilket tekstredigeringsprogram dere ønsk
 \\
 fra kommandolinjen.\\
 \\
-Når dette er gjort lager dere en ny mappe der dere laster ned \textit{Makefilen} fra it's learning til. Denne fungerer på samme måte som den gjorde i heisprosjektet - bare kall \textbf{make} fra kommandolinjen, så ordner \textit{gnu-make} resten.
+Når dette er gjort lager dere en ny mappe der dere laster ned \textit{Makefilen} fra \e_learn_platform til\footnote{Makefilen er også gjengitt i appendiks \ref{app::makefile}.}. Denne fungerer på samme måte som den gjorde i heisprosjektet - bare kall \textbf{make} fra kommandolinjen, så ordner \textit{gnu-make} resten.
 \begin{figure}[!h]
 \centering
 \includegraphics[width=0.8\linewidth]{p1000.png}
@@ -112,7 +118,7 @@ Koble opp kortet som beskrevet i seksjon \ref{Setup::Hardware}. Deretter kobler 
 \caption{Koblingspunkt av flatkabel.}
 \label{PORTB::LEDS}
 \end{figure}
-Deretter skal dere teste P1000-kortet ved å laste opp filen \textit{example.hex} som finnes på it's learning. Dette gjøres simpelthen ved å kalle \textbf{make test} fra mappen med \textit{example.hex}. Om dere får en feilmeldig, prøver dere \textbf{sudo make test}.\\
+Deretter skal dere teste P1000-kortet ved å laste opp filen \textit{example.hex} som finnes på \e_learn_platform. Dette gjøres simpelthen ved å kalle \textbf{make test} fra mappen med \textit{example.hex}. Om dere får en feilmeldig, prøver dere \textbf{sudo make test}.\\
 \\
 Når dette er gjort skal de fire LEDene (LED0-3) til høyre på kortet blinke etter hverandre. Hvis dette ikke skjer, så huk tak i en studass.
 \subsection{Knapper og LEDer}
@@ -341,10 +347,9 @@ Dere vil nå kunne styre servomotoren ved hjelp av den analoge spaken.
 \subsubsection{Hint}
 \begin{enumerate}
 \item Samme signalisering som vi bruker i denne laben kan brukes til å kontrollere en \textit{mikroservo}, for eksempel den sett i figur \ref{Micro::servo}. Koble denne til en mikrokontroller med bluetooth, og dere har en trådløs lysbryter.
-\item Dere vil se mer enn nok av mikrokontrollerkortet igjen i TTK4155, "byggern".
-\item Omega Verksted har stort sett de komponentene dere skulle trenge, og kunnskapen til å hjelpe dere, om dere ønsker å utforske innvevde datasystemer på egenhånd. Dette er en veldig god måte å lære på :)
+\item Omega Verksted har stort sett de komponenete dere skulle trenge, om dere vil lære mer på egenhånd, hvilket er en bra måte å lære på!
 \end{enumerate}
-\begin{figure}[bh]
+\begin{figure}[!h]
 \centering
 \includegraphics[width=0.8\linewidth]{micro_servo.jpg}
 \caption{Mikroservo som bruker $1.0 - 2.0\,\mathrm{ms}$ signalisering.}
@@ -402,4 +407,20 @@ DDRB |= (1 << PB0);
 PORTB &= ~(1 << PB0);
 \end{lstlisting}
 I kodesnutt \ref{code::names} demonstrerer vi hvordan vi setter pinne 0 i \textbf{D}ata-\textbf{D}irection-\textbf{R}egister-\textbf{B}, slik at pinne 0 blir satt i \textit{output}-modus. Deretter skrur vi av pinne 0 i PORTB, slik at pinnen er logisk lav.
+\section{Makefile}
+\label{app::makefile}
+Makefilen er gitt i kodesnutt \ref{code::makefile}. Verktøykjeden benytter avr-gcc for kompilering, avr-objcopy for å oversette objektfilen til intel sitt hexfilformat, og avrdude for å skrive hexfilen inn i mikrokontrollerens flashområde over SPI.
+\begin{lstlisting}[caption=Makefile.,label=code::makefile,breaklines=true]
+main:
+	avr-gcc -mmcu=at90usb1287 -Os *.c -o main.o -std=c11
+	avr-objcopy -j .text -j .data -O ihex main.o main.hex
+	avrdude -p usb1287 -c atmelice -U flash:w:main.hex:i
+
+clean:
+	find . -type f -name "*.hex" ! -name "example.hex" -delete
+	rm *.o
+
+test:
+	avrdude -p usb1287 -c atmelice -U flash:w:example.hex:i
+\end{lstlisting}
 \end{document}
